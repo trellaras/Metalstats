@@ -27,7 +27,7 @@ jobs:
       - name: Build with Nuitka
         run: |
           $nuitkaArgs = @(
-            '--onefile'
+            '--standalone'
             '--assume-yes-for-downloads'
             '--enable-plugin=tk-inter'
             '--windows-console-mode=force'
