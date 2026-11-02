@@ -29,7 +29,6 @@ jobs:
             '--assume-yes-for-downloads'
             '--lto=no'
             '--windows-console-mode=disable'
-            '--windows-uac-execution-level=asInvoker'
             '--windows-company-name=JKaL Studio'
             '--windows-product-name=Metalstats'
             '--windows-file-version=1.0.0.0'
@@ -37,6 +36,7 @@ jobs:
             '--windows-file-description=Metalstats built with Nuitka'
             'Metalstorm_Stats.pyw'
           )
+          Write-Host "Building with: $NuitkaArgs"
           python -m nuitka @NuitkaArgs
           if ($LASTEXITCODE -ne 0) { throw 'Nuitka build failed' }
 
