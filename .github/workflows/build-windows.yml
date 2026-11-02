@@ -7,11 +7,10 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
@@ -38,7 +37,6 @@ jobs:
             '--windows-file-description=Metalstats built with Nuitka'
             'Metalstorm_Stats.pyw'
           )
-          Write-Host "Building with: $NuitkaArgs"
           python -m nuitka @NuitkaArgs
           if ($LASTEXITCODE -ne 0) { throw 'Nuitka build failed' }
 
