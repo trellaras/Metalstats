@@ -1,0 +1,61 @@
+name: Build Metalstorm_Stats for Windows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nuitka customtkinter openpyxl pandas requests
+      - name: Build with Nuitka
+        run: |
+          $nuitkaArgs = @(
+            '--onefile'
+            '--assume-yes-for-downloads'
+            '--windows-console-mode=disable'
+            '--windows-company-name=PythonAppBuilder'
+            '--windows-product-name=Metalstorm_Stats'
+            '--windows-file-version=1.0.0.0'
+            '--windows-product-version=1.0.0.0'
+            'Metalstorm_Stats.pyw'
+          )
+          python -m nuitka @nuitkaArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Nuitka build failed.' }
+      - name: Prepare distribution
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item .\Metalstorm_Stats.exe .\dist\Metalstorm_Stats.exe
+      - name: Create SHA-256 checksums
+        run: |
+          Get-ChildItem .\dist -File -Recurse | ForEach-Object {
+            $h = Get-FileHash $_.FullName -Algorithm SHA256
+            "$($h.Hash.ToLower())  $($_.Name)" | Out-File .\SHA256SUMS.txt -Append -Encoding utf8
+          }
+          Copy-Item .\SHA256SUMS.txt .\dist\SHA256SUMS.txt
+      - name: Create ZIP
+        run: |
+          Compress-Archive -Path '.\dist\*' -DestinationPath '.\Metalstorm_Stats-Windows-x64.zip' -Force
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Metalstorm_Stats-Windows-x64
+          path: Metalstorm_Stats-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14
